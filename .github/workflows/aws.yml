@@ -7,15 +7,22 @@ on:
       - completed
 
 jobs:
-  buid:
+  build:
     runs-on: self-hosted
 
     steps:
       - name: Pull DOCKER IMAGE from DOCKER HUB
         run: sudo docker pull devcloudarmel/handleform:1.0
 
-      - name: Delete old container
-        run: sudo docker rm -f handleform-container || true
-      
+      - name: Stop and remove old container if exists
+        run: |
+          if [ "$(docker ps -q -f name=handleform-container)" ]; then
+            sudo docker stop handleform-container
+            sudo docker rm handleform-container
+          fi
+
       - name: Run docker container
         run: sudo docker run -d -p 3000:3000 --name handleform-container devcloudarmel/handleform:1.0
+
+      - name: Remove dangling images
+        run: sudo docker image prune -f
